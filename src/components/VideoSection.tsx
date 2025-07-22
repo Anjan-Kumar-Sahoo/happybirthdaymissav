@@ -88,21 +88,21 @@ const VideoSection: React.FC = () => {
                   </motion.div>
                   <p className="text-lg font-medium mb-2">Portrait Video of Miss Av</p>
                   <p className="text-sm opacity-80">
-                    Upload your special video here
+                    {/* Upload your special video here */}
                   </p>
                 </div>
               </div>
               
-              {/* Video element (replace with actual video) */}
-              {/* <video 
+              {/* Video element */}
+              <video 
                 className="w-full h-full object-cover"
                 controls
                 muted
                 poster="path-to-video-poster.jpg"
               >
-                <source src="path-to-miss-av-video.mp4" type="video/mp4" />
+                <source src="YOUR_GOOGLE_DRIVE_DIRECT_LINK_HERE" type="video/mp4" />
                 Your browser does not support the video tag.
-              </video> */}
+              </video>
             </div>
           </div>
 

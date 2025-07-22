@@ -1,0 +1,8 @@
+This is a placeholder file. Add your images here with the following naming convention:
+
+Personal slideshow images:
+- av1.jpg, av2.jpg, av3.jpg, ..., av10.jpg
+
+Supported formats: .jpg, .jpeg, .png, .gif, .webp
+
+The images will be automatically loaded by the PersonalSlideshow component.

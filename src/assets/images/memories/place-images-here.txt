@@ -1,0 +1,8 @@
+This is a placeholder file. Add your images here with the following naming convention:
+
+Memory slideshow images:
+- m1.jpg, m2.jpg, m3.jpg, ..., m10.jpg
+
+Supported formats: .jpg, .jpeg, .png, .gif, .webp
+
+The images will be automatically loaded by the MemoriesSlideshow component.
