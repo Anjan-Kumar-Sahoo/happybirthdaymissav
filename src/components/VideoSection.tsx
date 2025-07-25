@@ -121,7 +121,6 @@ const VideoSection: React.FC = () => {
                 ref={videoRef}
                 className="w-full h-full object-contain rounded-2xl"
                 controls
-                muted
                 autoPlay={false}
                 poster={customPoster || "/images/thumbnails/Av_videothumbnail.jpg"} // Use generated poster or custom thumbnail
                 onPlay={() => setIsPlaying(true)}
