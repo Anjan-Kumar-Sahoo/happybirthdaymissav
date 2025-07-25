@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 
 /**
@@ -7,6 +7,46 @@ import { motion } from 'framer-motion';
  * Creates an immersive, nature-framed viewing experience
  */
 const VideoSection: React.FC = () => {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [customPoster, setCustomPoster] = useState<string>('');
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  const togglePlay = () => {
+    if (videoRef.current) {
+      if (isPlaying) {
+        videoRef.current.pause();
+      } else {
+        videoRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+
+  // Generate poster from first frame if custom thumbnail fails to load
+  const generatePosterFromFirstFrame = () => {
+    const video = videoRef.current;
+    if (video && video.videoWidth > 0) {
+      video.currentTime = 0.1; // Seek to 0.1 seconds to ensure we get a good frame
+      
+      const handleSeeked = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d');
+        
+        if (ctx) {
+          ctx.drawImage(video, 0, 0);
+          const posterDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+          setCustomPoster(posterDataUrl);
+        }
+        
+        video.removeEventListener('seeked', handleSeeked);
+        video.currentTime = 0; // Reset to beginning
+      };
+      
+      video.addEventListener('seeked', handleSeeked);
+    }
+  };
   return (
     <section className="max-w-6xl mx-auto mt-16 mb-12">
       <motion.div
@@ -16,10 +56,10 @@ const VideoSection: React.FC = () => {
         className="text-center mb-8"
       >
         <h3 className="text-2xl md:text-3xl font-light text-white mb-2">
-          A Special Message for You
+          🎥 Happy Birthday Miss Av! 🎂
         </h3>
         <p className="text-emerald-200 text-lg">
-          Framed by the beauty of nature, just like your wonderful spirit 🌿
+          A special birthday video message framed by nature's beauty 🌿
         </p>
       </motion.div>
 
@@ -76,33 +116,45 @@ const VideoSection: React.FC = () => {
           {/* Video Container */}
           <div className="relative mx-8 md:mx-12 bg-black/20 rounded-2xl overflow-hidden backdrop-blur-sm border border-white/10">
             <div className="aspect-[9/16] max-w-md mx-auto relative">
-              {/* Placeholder for Miss Av's portrait video */}
-              <div className="absolute inset-0 bg-gradient-to-br from-pink-400/20 to-purple-400/20 flex items-center justify-center">
-                <div className="text-center text-white p-8">
-                  <motion.div
-                    animate={{ rotate: [0, 10, 0] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                    className="text-6xl mb-4"
-                  >
-                    🎬
-                  </motion.div>
-                  <p className="text-lg font-medium mb-2">Portrait Video of Miss Av</p>
-                  <p className="text-sm opacity-80">
-                    {/* Upload your special video here */}
-                  </p>
-                </div>
-              </div>
-              
               {/* Video element */}
               <video 
-                className="w-full h-full object-cover"
+                ref={videoRef}
+                className="w-full h-full object-cover rounded-2xl"
                 controls
                 muted
-                poster="path-to-video-poster.jpg"
+                autoPlay={false}
+                poster={customPoster || "/images/thumbnails/Av_videothumbnail.jpg"} // Use generated poster or custom thumbnail
+                onPlay={() => setIsPlaying(true)}
+                onPause={() => setIsPlaying(false)}
+                onLoadedMetadata={generatePosterFromFirstFrame} // Generate poster when video metadata loads
+                onError={(e) => {
+                  // If custom thumbnail fails to load, generate from first frame
+                  const target = e.target as HTMLVideoElement;
+                  if (target.poster.includes('thumbnails') && !customPoster) {
+                    generatePosterFromFirstFrame();
+                  }
+                }}
+                preload="metadata" // Load video metadata to get first frame if poster fails
               >
-                <source src="YOUR_GOOGLE_DRIVE_DIRECT_LINK_HERE" type="video/mp4" />
+                <source src="/videos/Av_bdayvideo.mp4" type="video/mp4" />
                 Your browser does not support the video tag.
               </video>
+              
+              {/* Play button overlay */}
+              {!isPlaying && (
+                <div 
+                  className="absolute inset-0 bg-black/30 flex items-center justify-center group hover:bg-black/20 transition-all cursor-pointer"
+                  onClick={togglePlay}
+                >
+                  <motion.div
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    className="bg-white/20 backdrop-blur-sm rounded-full p-4 group-hover:bg-white/30 transition-all"
+                  >
+                    <div className="text-white text-4xl">▶️</div>
+                  </motion.div>
+                </div>
+              )}
             </div>
           </div>
 
