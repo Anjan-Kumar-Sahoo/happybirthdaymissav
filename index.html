@@ -52,6 +52,43 @@
         -ms-user-select: none;
         user-select: none;
       }
+      
+      /* Fullscreen video handling for portrait videos */
+      video:fullscreen {
+        width: auto !important;
+        height: 100vh !important;
+        max-width: calc(100vh * 9/16) !important;
+        object-fit: contain !important;
+        margin: 0 auto !important;
+        background: black;
+      }
+      
+      video:-webkit-full-screen {
+        width: auto !important;
+        height: 100vh !important;
+        max-width: calc(100vh * 9/16) !important;
+        object-fit: contain !important;
+        margin: 0 auto !important;
+        background: black;
+      }
+      
+      video:-moz-full-screen {
+        width: auto !important;
+        height: 100vh !important;
+        max-width: calc(100vh * 9/16) !important;
+        object-fit: contain !important;
+        margin: 0 auto !important;
+        background: black;
+      }
+      
+      video:-ms-fullscreen {
+        width: auto !important;
+        height: 100vh !important;
+        max-width: calc(100vh * 9/16) !important;
+        object-fit: contain !important;
+        margin: 0 auto !important;
+        background: black;
+      }
     </style>
   </head>
   <body class="font-text">

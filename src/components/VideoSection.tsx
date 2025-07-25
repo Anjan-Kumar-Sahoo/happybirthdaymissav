@@ -119,7 +119,7 @@ const VideoSection: React.FC = () => {
               {/* Video element */}
               <video 
                 ref={videoRef}
-                className="w-full h-full object-cover rounded-2xl"
+                className="w-full h-full object-contain rounded-2xl"
                 controls
                 muted
                 autoPlay={false}
@@ -127,6 +127,9 @@ const VideoSection: React.FC = () => {
                 onPlay={() => setIsPlaying(true)}
                 onPause={() => setIsPlaying(false)}
                 onLoadedMetadata={generatePosterFromFirstFrame} // Generate poster when video metadata loads
+                style={{
+                  aspectRatio: '9/16', // Ensure portrait aspect ratio is maintained
+                }}
                 onError={(e) => {
                   // If custom thumbnail fails to load, generate from first frame
                   const target = e.target as HTMLVideoElement;
