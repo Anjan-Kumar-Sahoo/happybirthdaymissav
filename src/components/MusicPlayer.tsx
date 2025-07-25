@@ -1,7 +1,6 @@
-import React, { useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
-import { Volume2, VolumeX, Music } from 'lucide-react';
-import * as Tone from 'tone';
+import React, { useEffect, useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Volume2, VolumeX, Music, ChevronDown } from 'lucide-react';
 
 interface MusicPlayerProps {
   isPlaying: boolean;
@@ -10,165 +9,231 @@ interface MusicPlayerProps {
 
 /**
  * MusicPlayer Component
- * Provides ambient nature-inspired birthday music using Tone.js
+ * Plays background music from an MP3 file on loop with song selection
  * Features a beautiful, garden-themed control interface
  */
 const MusicPlayer: React.FC<MusicPlayerProps> = ({ isPlaying, setIsPlaying }) => {
-  const synthRef = useRef<Tone.PolySynth | null>(null);
-  const sequenceRef = useRef<Tone.Sequence | null>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [currentSong, setCurrentSong] = useState(0);
+  const [showSongList, setShowSongList] = useState(false);
 
-  /**
-   * Happy Birthday melody in a gentle, nature-inspired arrangement
-   * Using soft, harp-like tones
-   */
-  const melody = [
-    { note: 'C4', duration: '4n' },
-    { note: 'C4', duration: '8n' },
-    { note: 'D4', duration: '4n' },
-    { note: 'C4', duration: '4n' },
-    { note: 'F4', duration: '4n' },
-    { note: 'E4', duration: '2n' },
-    { note: 'C4', duration: '4n' },
-    { note: 'C4', duration: '8n' },
-    { note: 'D4', duration: '4n' },
-    { note: 'C4', duration: '4n' },
-    { note: 'G4', duration: '4n' },
-    { note: 'F4', duration: '2n' },
-    { note: 'C4', duration: '4n' },
-    { note: 'C4', duration: '8n' },
-    { note: 'C5', duration: '4n' },
-    { note: 'A4', duration: '4n' },
-    { note: 'F4', duration: '4n' },
-    { note: 'E4', duration: '4n' },
-    { note: 'D4', duration: '2n' },
-    { note: 'A#4', duration: '4n' },
-    { note: 'A#4', duration: '8n' },
-    { note: 'A4', duration: '4n' },
-    { note: 'F4', duration: '4n' },
-    { note: 'G4', duration: '4n' },
-    { note: 'F4', duration: '2n' },
+  // Available songs
+  const songs = [
+    { title: "Tum Ho Toh", file: "/audio/Tum Ho Toh.mp3" },
+    { title: "Happy Birthday", file: "/audio/Happy-Birthday-Instrumental.mp3" }
   ];
 
   useEffect(() => {
-    // Initialize Tone.js synthesizer with harp-like sound
-    synthRef.current = new Tone.PolySynth({
-      oscillator: {
-        type: 'sine',
-      },
-      envelope: {
-        attack: 0.1,
-        decay: 0.3,
-        sustain: 0.8,
-        release: 2,
-      },
-    }).toDestination();
-
-    // Add reverb for a magical, spacious sound
-    const reverb = new Tone.Reverb({
-      decay: 3,
-      wet: 0.3,
-    }).toDestination();
-    
-    synthRef.current.connect(reverb);
-
-    // Set gentle volume
-    synthRef.current.volume.value = -15;
-
-    return () => {
-      if (sequenceRef.current) {
-        sequenceRef.current.dispose();
-      }
-      if (synthRef.current) {
-        synthRef.current.dispose();
-      }
-    };
-  }, []);
+    // Initialize audio element
+    if (audioRef.current) {
+      audioRef.current.loop = true;
+      audioRef.current.volume = 0.3; // Set gentle volume (0-1)
+      audioRef.current.src = songs[currentSong].file;
+      
+      // Handle play/pause events
+      const handlePlay = () => setIsPlaying(true);
+      const handlePause = () => setIsPlaying(false);
+      const handleError = (e: Event) => {
+        console.error('Audio error:', e);
+        setIsPlaying(false);
+      };
+      const handleCanPlay = () => {
+        console.log('Audio can play:', songs[currentSong].title);
+      };
+      
+      audioRef.current.addEventListener('play', handlePlay);
+      audioRef.current.addEventListener('pause', handlePause);
+      audioRef.current.addEventListener('error', handleError);
+      audioRef.current.addEventListener('canplay', handleCanPlay);
+      
+      // Load the audio
+      audioRef.current.load();
+      
+      return () => {
+        if (audioRef.current) {
+          audioRef.current.removeEventListener('play', handlePlay);
+          audioRef.current.removeEventListener('pause', handlePause);
+          audioRef.current.removeEventListener('error', handleError);
+          audioRef.current.removeEventListener('canplay', handleCanPlay);
+        }
+      };
+    }
+  }, [currentSong, songs, setIsPlaying]);
 
   /**
-   * Toggles music playback with smooth transitions
+   * Changes the current song
+   */
+  const changeSong = async (songIndex: number) => {
+    if (!audioRef.current) return;
+    
+    const wasPlaying = isPlaying;
+    
+    // Pause current song
+    audioRef.current.pause();
+    
+    // Change song
+    setCurrentSong(songIndex);
+    audioRef.current.src = songs[songIndex].file;
+    audioRef.current.load();
+    
+    // Resume playing if it was playing before
+    if (wasPlaying) {
+      try {
+        // Wait for the new audio to be ready
+        audioRef.current.addEventListener('canplay', async () => {
+          try {
+            await audioRef.current!.play();
+          } catch (error) {
+            console.error('Error playing new song:', error);
+            alert(`Could not play "${songs[songIndex].title}". Please check if the file exists.`);
+          }
+        }, { once: true });
+      } catch (error) {
+        console.error('Error setting up new song:', error);
+      }
+    }
+    
+    setShowSongList(false);
+  };
+
+  /**
+   * Toggles music playback
    */
   const toggleMusic = async () => {
-    if (!synthRef.current) return;
+    if (!audioRef.current) return;
 
     try {
-      if (!isPlaying) {
-        // Start Tone.js context
-        await Tone.start();
-        
-        // Create and start the musical sequence
-        let noteIndex = 0;
-        sequenceRef.current = new Tone.Sequence(
-          (time) => {
-            const { note, duration } = melody[noteIndex];
-            synthRef.current?.triggerAttackRelease(note, duration, time);
-            noteIndex = (noteIndex + 1) % melody.length;
-          },
-          Array(melody.length).fill(0).map((_, i) => i),
-          '4n'
-        );
-
-        Tone.Transport.bpm.value = 80; // Gentle, relaxed tempo
-        sequenceRef.current.start(0);
-        Tone.Transport.start();
-        setIsPlaying(true);
+      if (isPlaying) {
+        audioRef.current.pause();
       } else {
-        // Stop the music gracefully
-        Tone.Transport.stop();
-        if (sequenceRef.current) {
-          sequenceRef.current.stop();
-          sequenceRef.current.dispose();
-          sequenceRef.current = null;
+        // Check if audio is ready to play
+        if (audioRef.current.readyState >= 2) {
+          await audioRef.current.play();
+        } else {
+          // Wait for audio to load
+          audioRef.current.addEventListener('canplay', async () => {
+            try {
+              await audioRef.current!.play();
+            } catch (error) {
+              console.error('Error playing audio after load:', error);
+              alert('Could not play audio. Please check if the file exists and try again.');
+            }
+          }, { once: true });
+          
+          audioRef.current.load();
         }
-        setIsPlaying(false);
       }
     } catch (error) {
       console.error('Error toggling music:', error);
+      alert(`Could not play "${songs[currentSong].title}". Please check if the file exists and try again.`);
+      setIsPlaying(false);
     }
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.8 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className="flex items-center gap-2 bg-white/20 backdrop-blur-md rounded-full px-4 py-2 shadow-lg border border-white/30"
-    >
-      <Music className="w-4 h-4 text-emerald-200" />
-      <button
-        onClick={toggleMusic}
-        className="flex items-center gap-2 text-white hover:text-emerald-200 transition-colors duration-300"
-        aria-label={isPlaying ? 'Mute music' : 'Play music'}
+    <div className="relative">
+      {/* Hidden audio element */}
+      <audio 
+        ref={audioRef}
+        preload="metadata"
+        crossOrigin="anonymous"
+        onError={(e) => {
+          console.error('Audio element error:', e);
+          console.error('Failed to load:', songs[currentSong].file);
+        }}
+        onLoadStart={() => console.log('Loading:', songs[currentSong].title)}
+        onCanPlay={() => console.log('Can play:', songs[currentSong].title)}
       >
-        {isPlaying ? (
-          <Volume2 className="w-5 h-5" />
-        ) : (
-          <VolumeX className="w-5 h-5" />
-        )}
-        <span className="text-sm font-medium">
-          {isPlaying ? 'Playing' : 'Play Music'}
-        </span>
-      </button>
+        <source src={songs[currentSong].file} type="audio/mpeg" />
+        Your browser does not support the audio element.
+      </audio>
       
-      {/* Animated Music Indicator */}
-      {isPlaying && (
-        <div className="flex items-center gap-1">
-          {[...Array(3)].map((_, i) => (
-            <motion.div
-              key={i}
-              className="w-1 bg-emerald-300 rounded-full"
-              animate={{
-                height: [4, 12, 4],
-              }}
-              transition={{
-                duration: 0.8,
-                repeat: Infinity,
-                delay: i * 0.2,
-                ease: "easeInOut",
-              }}
-            />
-          ))}
-        </div>
-      )}
-    </motion.div>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="flex items-center gap-2 bg-white/20 backdrop-blur-md rounded-full px-4 py-2 shadow-lg border border-white/30"
+      >
+        {/* Music Icon with Song Selector */}
+        <button
+          onClick={() => setShowSongList(!showSongList)}
+          className="flex items-center gap-1 text-emerald-200 hover:text-emerald-100 transition-colors"
+          aria-label="Select song"
+        >
+          <Music className="w-4 h-4" />
+          <ChevronDown className="w-3 h-3" />
+        </button>
+
+        {/* Play/Pause Button */}
+        <button
+          onClick={toggleMusic}
+          className="flex items-center gap-2 text-white hover:text-emerald-200 transition-colors duration-300"
+          aria-label={isPlaying ? 'Mute music' : 'Play music'}
+        >
+          {isPlaying ? (
+            <Volume2 className="w-5 h-5" />
+          ) : (
+            <VolumeX className="w-5 h-5" />
+          )}
+          <span className="text-sm font-medium">
+            {isPlaying ? songs[currentSong].title : 'Play Music'}
+          </span>
+        </button>
+        
+        {/* Animated Music Indicator */}
+        {isPlaying && (
+          <div className="flex items-center gap-1">
+            {[...Array(3)].map((_, i) => (
+              <motion.div
+                key={i}
+                className="w-1 bg-emerald-300 rounded-full"
+                animate={{
+                  height: [4, 12, 4],
+                }}
+                transition={{
+                  duration: 0.8,
+                  repeat: Infinity,
+                  delay: i * 0.2,
+                  ease: "easeInOut",
+                }}
+              />
+            ))}
+          </div>
+        )}
+      </motion.div>
+
+      {/* Song Selection Dropdown */}
+      <AnimatePresence>
+        {showSongList && (
+          <motion.div
+            initial={{ opacity: 0, y: -10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+            className="absolute top-full mt-2 left-0 right-0 bg-white/90 backdrop-blur-md rounded-xl shadow-lg border border-white/30 overflow-hidden z-10"
+          >
+            {songs.map((song, index) => (
+              <button
+                key={index}
+                onClick={() => changeSong(index)}
+                className={`w-full px-4 py-3 text-left transition-colors ${
+                  currentSong === index
+                    ? 'bg-emerald-500/20 text-emerald-800 font-medium'
+                    : 'text-gray-700 hover:bg-emerald-500/10'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Music className="w-3 h-3" />
+                  <span className="text-sm">{song.title}</span>
+                  {currentSong === index && (
+                    <span className="text-xs text-emerald-600 ml-auto">Playing</span>
+                  )}
+                </div>
+              </button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 };
 

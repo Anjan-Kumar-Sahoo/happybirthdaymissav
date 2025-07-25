@@ -142,19 +142,15 @@ const VideoSection: React.FC = () => {
                 Your browser does not support the video tag.
               </video>
               
-              {/* Play button overlay */}
+              {/* Simple Play Button Overlay */}
               {!isPlaying && (
                 <div 
-                  className="absolute inset-0 bg-black/30 flex items-center justify-center group hover:bg-black/20 transition-all cursor-pointer"
+                  className="absolute inset-0 flex items-center justify-center cursor-pointer"
                   onClick={togglePlay}
                 >
-                  <motion.div
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    className="bg-white/20 backdrop-blur-sm rounded-full p-4 group-hover:bg-white/30 transition-all"
-                  >
-                    <div className="text-white text-4xl">▶️</div>
-                  </motion.div>
+                  <div className="bg-white/90 rounded-full p-4 shadow-lg hover:bg-white transition-colors">
+                    <div className="text-gray-800 text-3xl">▶</div>
+                  </div>
                 </div>
               )}
             </div>

@@ -112,16 +112,6 @@ const SmoothSlideshow: React.FC<{
           ))}
         </div>
       </div>
-
-      {/* Direction Indicator */}
-      <motion.div
-        className={`absolute ${direction === 'right' ? 'right-4' : 'left-4'} top-1/2 transform -translate-y-1/2 text-white/60`}
-        animate={{ x: direction === 'right' ? [5, -5, 5] : [-5, 5, -5] }}
-        transition={{ duration: 2, repeat: Infinity }}
-      >
-        <div className="text-2xl">{direction === 'right' ? '→' : '←'}</div>
-        <div className="text-xs mt-1 font-medium">Sliding</div>
-      </motion.div>
     </motion.div>
   );
 };
