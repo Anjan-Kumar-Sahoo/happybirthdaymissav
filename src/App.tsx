@@ -24,8 +24,8 @@ function App() {
 
   // Check if today is August 8th (Miss Av's birthday)
   const today = new Date();
-  const isBirthday = today.getMonth() === 7 && today.getDate() === 8; // Month is 0-indexed (7 = August)
-  // const isBirthday = true; // For testing purposes, always true
+ // const isBirthday = today.getMonth() === 7 && today.getDate() === 8; // Month is 0-indexed (7 = August)
+  const isBirthday = true; // For testing purposes, always true
   // Nature-themed emojis for wish button
   const natureEmojis = ['🌸', '🌿', '🌳', '☀️', '💧', '🦋', '🌺', '🌻', '🌷', '🍃', '🌙', '⭐'];
 
