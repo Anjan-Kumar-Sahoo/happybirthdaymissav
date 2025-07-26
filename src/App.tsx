@@ -10,6 +10,7 @@ import PersonalSlideshow from './components/PersonalSlideshow';
 import PetalAnimation from './components/PetalAnimation';
 import WishAnimation from './components/WishAnimation';
 import BottomNavbar from './components/BottomNavbar';
+import DateChecker from './components/DateChecker';
 
 /**
  * Main App component for Miss Av's Birthday Garden
@@ -21,8 +22,17 @@ function App() {
   const [wishEmojis, setWishEmojis] = useState<Array<{id: number, emoji: string, x: number, y: number}>>([]);
   const [isMusicPlaying, setIsMusicPlaying] = useState(false);
 
+  // Check if today is August 8th (Miss Av's birthday)
+  const today = new Date();
+  const isBirthday = today.getMonth() === 7 && today.getDate() === 8; // Month is 0-indexed (7 = August)
+
   // Nature-themed emojis for wish button
   const natureEmojis = ['🌸', '🌿', '🌳', '☀️', '💧', '🦋', '🌺', '🌻', '🌷', '🍃', '🌙', '⭐'];
+
+  // If it's not her birthday, show the DateChecker component
+  if (!isBirthday) {
+    return <DateChecker />;
+  }
 
   /**
    * Handles the "Celebrate with Petals" button click
